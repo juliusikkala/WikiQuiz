@@ -1,4 +1,4 @@
-# wikiquiz
+# WikiQuiz
 
 ## Project setup
 ```

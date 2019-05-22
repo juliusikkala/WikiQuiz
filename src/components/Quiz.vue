@@ -46,7 +46,7 @@ export default {
     }
   },
   watch: {
-    lang: function(value) {
+    lang: function() {
       this.refresh()
     }
   },
@@ -94,7 +94,6 @@ export default {
           parts[i].censored = true
         }
       }
-      console.log(parts)
       let formatted = '<p>';
 
       let prevCensored = false;
