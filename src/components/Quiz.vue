@@ -48,9 +48,51 @@ export default {
       if(!this.summary) {
         return '<p>Fetching a random article...</p>'
       }
-      const parser = new DOMParser();
-      const data = parser.parseFromString(this.summary, 'text/html').getElementsByTagName('p')[0]
-      return data.outerHTML 
+      const fullTitle = this.title.toLowerCase().trim()
+      const titleParts = fullTitle.split(/[,.;:?!'()[\]{} ]/)
+      const separator = /([,.;:?!'()[\]{} ])/
+      const parts = this.summary.split(separator).map(
+        function(part) {
+          let censored = false
+          if(!separator.test(part)) {
+            let maxSimilarity = stringSimilarity.compareTwoStrings(
+              part.toLowerCase(), fullTitle)
+            titleParts.forEach(function(titlePart) {
+              maxSimilarity = Math.max(
+                maxSimilarity,
+                stringSimilarity.compareTwoStrings(part.toLowerCase(), titlePart)
+              )
+            })
+            if(maxSimilarity > 0.9) 
+              censored = true;
+          }
+          return {
+            censored: censored,
+            str: part
+          }
+        }
+      )
+      // Fill separator with censorship from around.
+      for(let i = 1; i < parts.length-1; ++i) {
+        if(parts[i-1].censored && parts[i+1].censored && separator.test(parts[i].str)) {
+          parts[i].censored = true
+        }
+      }
+      let formatted = '<p>';
+
+      let prevCensored = false;
+      for(let part of parts) {
+        if(part.censored && !prevCensored) {
+          formatted += '<span>';
+        } else if(!part.censored && prevCensored) {
+          formatted += '</span>';
+        }
+        formatted += part.str;
+        prevCensored = part.censored;
+      }
+      if(prevCensored) formatted += '</span>';
+
+      return formatted+'</p>'
     }
   },
   methods: {
@@ -62,7 +104,6 @@ export default {
         this.guess.toLowerCase().trim(),
         this.title.toLowerCase().trim()
       )
-      console.log(similarity)
       if(similarity > 0.8) {
         this.victory = true
         this.refreshText = "NEXT!"
@@ -78,7 +119,8 @@ export default {
     refresh: function() {
       this.isCensored = false
       this.guess = null
-      setTimeout(this.fetchSummary, 1000)
+      if(!this.victory) setTimeout(this.fetchSummary, 1000)
+      else this.fetchSummary();
       this.$confetti.stop()
       this.victory = false
     },
@@ -89,9 +131,8 @@ export default {
       axios.get(url)
         .then(function (response) {
           vm.isCensored = true
-          vm.title = response.data.title.replace(/ *\([^)]*\) */g, "")
-          vm.summary = response.data.extract_html
-          console.log(vm.title)
+          vm.title = response.data.title.replace(/(,.*)|( *\([^)]*\) *)/g, "")
+          vm.summary = response.data.extract
           vm.refreshText = "Give up"
         })
         .catch(function (error) {
@@ -108,7 +149,7 @@ export default {
 <style>
 @import url('https://fonts.googleapis.com/css?family=Bangers&display=swap');
 
-.censored b, .censored .spancensor {
+.censored span {
   border-radius: 0.3rem;
   border: solid #E24949 0.2rem;
   color: transparent;
