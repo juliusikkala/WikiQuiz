@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <h1>WikiQuiz</h1>
-    <Quiz id="quiz" lang="en"/>
+    <Quiz id="quiz"/>
     <div id="footer">
       <p>Copyright 2019 Julius Ikkala. All summaries are from Wikipedia.</p>
     </div>

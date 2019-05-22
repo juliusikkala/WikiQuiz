@@ -4,6 +4,10 @@
     <div class="controls">
       <input v-model="guess" placeholder="Type your guess" @keydown.enter="makeGuess" :disabled="victory">
       <button @click="refresh">{{ refreshText }}</button>
+      <select v-model="lang">
+        <option value="en">English</option>
+        <option value="fi">Finnish</option>
+      </select>
       <transition name="fade">
         <div class="victory" v-if="victory">
           <h1 id="number"><span>#</span>1</h1>
@@ -28,11 +32,9 @@ const separatorInc = /([,.;:?!'()[\]{} ])/
 
 export default {
   name: 'Quiz',
-  props: {
-    lang: String,
-  },
   data: function() {
     return {
+      lang: 'en',
       title: null,
       summary: null,
       error: null,
@@ -41,6 +43,11 @@ export default {
       guess: null,
       victory: false,
       score: 0,
+    }
+  },
+  watch: {
+    lang: function(value) {
+      this.refresh()
     }
   },
   computed: {
