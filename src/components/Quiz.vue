@@ -202,10 +202,13 @@ export default {
 
 .controls button {
   margin: 0 0.5rem;
+  white-space:nowrap;
+  padding: 0;
 }
 .controls input {
   flex: 1;
-  margin: 0 0.5rem;
+  box-sizing:border-box;
+  min-width: 8rem;
 }
 
 h3 {
@@ -229,6 +232,15 @@ a {
   padding: 0.5rem 2rem 1.2rem 2rem;
   border-radius: 0.5rem;
   background: white;
+}
+
+@media screen and (max-width: 500px) {
+  .quiz {
+    margin: 0;
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
 }
 
 @keyframes zoomer {
