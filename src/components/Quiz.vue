@@ -23,6 +23,9 @@ import stringSimilarity from 'string-similarity'
 
 Vue.use(VueConfetti)
 
+const separator = /[,.;:?!'()[\]{} ]/
+const separatorInc = /([,.;:?!'()[\]{} ])/
+
 export default {
   name: 'Quiz',
   props: {
@@ -41,6 +44,12 @@ export default {
     }
   },
   computed: {
+    whitelist: function () {
+      return {
+        'en': ['the', 'of', 'from', 'on', 'and', 'or', 'it', 'is'],
+        'fi': ['ja', 'on'],
+      }[this.lang];
+    },
     censoredSummary: function() {
       if(this.error) {
         return '<p>'+this.error+'</p>'
@@ -49,12 +58,12 @@ export default {
         return '<p>Fetching a random article...</p>'
       }
       const fullTitle = this.title.toLowerCase().trim()
-      const titleParts = fullTitle.split(/[,.;:?!'()[\]{} ]/)
-      const separator = /([,.;:?!'()[\]{} ])/
-      const parts = this.summary.split(separator).map(
+      const titleParts = fullTitle.split(separator)
+      const whitelist = this.whitelist
+      const parts = this.summary.split(separatorInc).map(
         function(part) {
           let censored = false
-          if(!separator.test(part)) {
+          if(!separator.test(part) && !whitelist.includes(part) && part.length != 0) {
             let maxSimilarity = stringSimilarity.compareTwoStrings(
               part.toLowerCase(), fullTitle)
             titleParts.forEach(function(titlePart) {
@@ -78,6 +87,7 @@ export default {
           parts[i].censored = true
         }
       }
+      console.log(parts)
       let formatted = '<p>';
 
       let prevCensored = false;
@@ -96,13 +106,23 @@ export default {
     }
   },
   methods: {
+    sanitize: function (str) {
+      const parts = str.toLowerCase().trim().split(separator)
+      let newParts = []
+      for(let part of parts) {
+        if(!this.whitelist.includes(part)) {
+          newParts.push(part)
+        }
+      }
+      return newParts.join(" ")
+    },
     makeGuess: function () {
       if(this.victory) {
         return;
       }
       const similarity = stringSimilarity.compareTwoStrings(
-        this.guess.toLowerCase().trim(),
-        this.title.toLowerCase().trim()
+        this.sanitize(this.guess),
+        this.sanitize(this.title)
       )
       if(similarity > 0.8) {
         this.victory = true
@@ -154,6 +174,7 @@ export default {
   border: solid #E24949 0.2rem;
   color: transparent;
   user-select: none;
+  white-space:nowrap;
   background: repeating-linear-gradient(
     -45deg,
     #FFFFFF,
@@ -198,10 +219,10 @@ a {
 
 .quiz {
   max-width: 40rem;
-  position: relative;
   box-shadow: 0 0.3rem 1rem #888888;
   padding: 0.5rem 2rem 1.2rem 2rem;
   border-radius: 0.5rem;
+  background: white;
 }
 
 @keyframes zoomer {
