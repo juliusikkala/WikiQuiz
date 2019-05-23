@@ -1,0 +1,17 @@
+{
+  "name": "wqbackend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Julius Ikkala",
+  "license": "MIT",
+  "scripts": {
+    "start": "PORT=3001 nodemon ./bin/www"
+  },
+  "dependencies": {
+    "axios": "^0.18.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.0",
+    "lodash": "^4.17.11",
+    "nodemon": "^1.19.0"
+  }
+}

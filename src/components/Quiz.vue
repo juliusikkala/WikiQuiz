@@ -1,13 +1,36 @@
 <template>
   <div class="quiz">
+    <h2 :class="{ censored: isCensored }"><span>{{title}}</span></h2>
+    <div :class="{ navOpen: menuOpen }" @click="menuOpen = !menuOpen" id="navIcon">
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <transition name="showMenu">
+      <div class="menu" v-if="menuOpen">
+        <h2>Options</h2>
+        <label for="langPicker">Language:</label>
+        <select id="langPicker" v-model="lang">
+          <option value="en">English</option>
+          <option value="fi">Finnish</option>
+        </select>
+        <br/>
+        <label for="difficultyPicker">Articles:</label>
+        <select id="difficultyPicker" v-model="difficulty">
+          <option value="all">All</option>
+          <option value="100">Top-100</option>
+          <option value="250">Top-250</option>
+          <option value="500">Top-500</option>
+          <option value="1000">Top-1000</option>
+        </select>
+      </div>
+    </transition>
     <span :class="{ censored: isCensored }" v-html="censoredSummary"></span>
     <div class="controls">
       <input v-model="guess" placeholder="Type your guess" @keydown.enter="makeGuess" :disabled="victory">
+      <button @click="makeGuess">Guess!</button>
       <button @click="refresh">{{ refreshText }}</button>
-      <select v-model="lang">
-        <option value="en">English</option>
-        <option value="fi">Finnish</option>
-      </select>
       <transition name="fade">
         <div class="victory" v-if="victory">
           <h1 id="number"><span>#</span>1</h1>
@@ -38,17 +61,22 @@ export default {
       title: null,
       summary: null,
       error: null,
-      refreshText: "Give up",
+      refreshText: 'Give up',
       isCensored: true,
       guess: null,
       victory: false,
+      menuOpen: false,
       score: 0,
+      difficulty: 'all'
     }
   },
   watch: {
     lang: function() {
       this.refresh()
-    }
+    },
+    difficulty: function() {
+      this.refresh()
+    },
   },
   computed: {
     whitelist: function () {
@@ -152,13 +180,13 @@ export default {
     },
 
     fetchSummary: function() {
-      const url = 'https://'+this.lang+'.wikipedia.org/api/rest_v1/page/random/summary'
+      const url = 'http://localhost:3001/apiv1?lang='+this.lang+'&top='+this.difficulty
       const vm = this
       axios.get(url)
         .then(function (response) {
           vm.isCensored = true
-          vm.title = response.data.title.replace(/(,.*)|( *\([^)]*\) *)/g, "")
-          vm.summary = response.data.extract
+          vm.title = response.data.title
+          vm.summary = response.data.summary
           vm.refreshText = "Give up"
         })
         .catch(function (error) {
@@ -177,7 +205,7 @@ export default {
 
 .censored span {
   border-radius: 0.3rem;
-  border: solid #E24949 0.2rem;
+  border: solid #2c3e50 0.2rem;
   color: transparent;
   user-select: none;
   white-space:nowrap;
@@ -185,9 +213,59 @@ export default {
     -45deg,
     #FFFFFF,
     #FFFFFF 0.3rem,
-    #E24949 0.3rem,
-    #E24949 0.6rem
+    #2c3e50 0.3rem,
+    #2c3e50 0.6rem
   );
+}
+
+select {
+  margin: 0.5rem;
+  cursor: pointer;
+  border: none;
+  border-radius: 0.3rem;
+  padding: 0.2rem 0.5rem;
+  font-size: inherit;
+  background-color: white;
+  color: #2c3e50;
+  box-shadow: 0 0.1rem 0.2rem #888888;
+  background-position: center right;
+  background-repeat: no-repeat;
+}
+
+button {
+  margin: 0;
+  margin-left: 0.5rem;
+  white-space:nowrap;
+  padding: 0 0.6rem;
+  display: inline-block;
+  border: none;
+  border-radius: 0.3rem;
+  cursor: pointer;
+  background-color: white;
+  color: #2c3e50;
+  box-shadow: 0 0.1rem 0.2rem #888888;
+}
+
+button:active {
+  background-color: #2c3e50;
+  color: white;
+}
+
+input {
+  white-space:nowrap;
+  border: none;
+  border-radius: 0.3rem;
+  height: 1.8rem;
+  padding-left: 0.5rem;
+  background-color: white;
+  color: #2c3e50;
+  box-shadow: 0 0.1rem 0.2rem #888888;
+}
+
+.controls input {
+  flex: 1;
+  box-sizing:border-box;
+  min-width: 8rem;
 }
 
 .censored p {
@@ -200,15 +278,73 @@ export default {
   flex-direction: row;
 }
 
-.controls button {
-  margin: 0 0.5rem;
-  white-space:nowrap;
-  padding: 0;
+.menu {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: white;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border-radius: 0.5rem;
 }
-.controls input {
-  flex: 1;
-  box-sizing:border-box;
-  min-width: 8rem;
+
+#navIcon {
+  width: 2.5rem;
+  height: 1.95rem;
+  position: absolute;
+  top: 1.8rem;
+  right: 2rem;
+  cursor: pointer;
+  background: white;
+  border-radius: 0.4rem;
+  z-index: 4;
+}
+
+#navIcon span {
+  display: block;
+  position: absolute;
+  border-radius: 0.2rem;
+  height: 0.4rem;
+  width: 100%;
+  background: #2c3e50;
+  opacity: 1;
+  left: 0;
+  transform: rotate(0deg);
+  transition: .25s ease-in-out;
+}
+
+#navIcon span:nth-child(1) {
+  top: 0;
+}
+
+#navIcon span:nth-child(2),#navIcon span:nth-child(3) {
+  top: 0.8rem;
+}
+
+#navIcon span:nth-child(4) {
+  top: 1.6rem;
+}
+
+#navIcon.navOpen span:nth-child(1) {
+  top: 0.8rem;
+  width: 0%;
+  left: 50%;
+}
+
+#navIcon.navOpen span:nth-child(2) {
+  transform: rotate(45deg);
+}
+
+#navIcon.navOpen span:nth-child(3) {
+  transform: rotate(-45deg);
+}
+
+#navIcon.navOpen span:nth-child(4) {
+  top: 18px;
+  width: 0%;
+  left: 50%;
 }
 
 h3 {
@@ -240,6 +376,11 @@ a {
     padding: 0;
     border-radius: 0;
     box-shadow: none;
+  }
+  #navIcon {
+    width: 2.2rem;
+    top: 0.1rem;
+    right: 0.3rem;
   }
 }
 
@@ -282,7 +423,15 @@ a {
   transition: opacity .5s;
 }
 
-.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+.fade-enter, .fade-leave-to {
+  opacity: 0;
+}
+
+.showMenu-enter-active, .showMenu-leave-active {
+  transition: opacity .1s;
+}
+
+.showMenu-enter, .showMenu-leave-to {
   opacity: 0;
 }
 
@@ -328,5 +477,6 @@ a {
 #royale::first-letter {
   font-size: 6.5rem;
 }
+
 </style>
 
