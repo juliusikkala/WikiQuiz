@@ -184,10 +184,14 @@ export default {
       const vm = this
       axios.get(url)
         .then(function (response) {
-          vm.isCensored = true
-          vm.title = response.data.title
-          vm.summary = response.data.summary
-          vm.refreshText = "Give up"
+          if(response.data.error) {
+            vm.error = response.data.error
+          } else {
+            vm.isCensored = true
+            vm.title = response.data.title
+            vm.summary = response.data.summary
+            vm.refreshText = "Give up"
+          }
         })
         .catch(function (error) {
           vm.error = error

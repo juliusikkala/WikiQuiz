@@ -19,16 +19,19 @@ async function getTop1000(lang) {
   const url = 'https://wikimedia.org/api/rest_v1/metrics/pageviews/top/'+lang+'.wikipedia/all-access/'+year+'/'+month+'/all-days'
   if(!(url in top1000)) {
     const response = await axios.get(url);
-    top1000[url] = response.data.items[0].articles.map(({article}) => article).filter(
-      article => !(
-        article.startsWith('Special:') ||
-        article.startsWith('Help:') ||
-        article.startsWith('File:') ||
-        article.startsWith('Category:') ||
-        article.startsWith('Portal:') ||
-        article.startsWith('List_of_') ||
-        article === 'Main_Page'
-      )
+    top1000[url] = response.data.items[0].articles.map(({article}) => encodeURI(article)).filter(
+      article => {
+        const blacklist = [
+          'List_of_', 'Luettelo_'
+        ];
+        for(const prefix of blacklist) {
+          if(article.startsWith(prefix)) {
+            return false
+          }
+        }
+        const category = /^\w+:\w+.*$/;
+        return !category.test(article) && article !== 'Main_Page'
+      }
     )
   }
   return top1000[url]
@@ -49,9 +52,11 @@ app.get('/apiv1', (req, res) => {
             summary: response.data.extract,
           })
         }).catch(function (error) {
+          res.send({ error: "Server error :(" })
           console.log(error)
         })
     }).catch(function (error) {
+      res.send({ error: "Server error :(" })
       console.log(error)
     })
   } else {
@@ -63,6 +68,7 @@ app.get('/apiv1', (req, res) => {
           summary: response.data.extract,
         })
       }).catch(function (error) {
+        res.send({ error: "Server error :(" })
         console.log(error)
       })
   }
