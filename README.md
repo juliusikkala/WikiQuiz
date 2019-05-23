@@ -1,5 +1,7 @@
 # WikiQuiz
 
+Live at https://wq.jji.fi!
+
 ## Project setup
 ```
 yarn install
