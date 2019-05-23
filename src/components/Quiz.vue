@@ -160,6 +160,7 @@ export default {
       )
       if(similarity > 0.8) {
         this.victory = true
+        this.isCensored = false
         this.refreshText = "NEXT!"
         this.$confetti.start()
         this.$confetti.update({
@@ -206,6 +207,10 @@ export default {
 
 <style>
 @import url('https://fonts.googleapis.com/css?family=Bangers&display=swap');
+
+#confetti-canvas {
+  z-index: 10;
+}
 
 .censored span {
   border-radius: 0.3rem;
