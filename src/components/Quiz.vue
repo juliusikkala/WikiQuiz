@@ -382,7 +382,7 @@ a {
 @media screen and (max-width: 500px) {
   .quiz {
     margin: 0;
-    padding: 0;
+    padding: 1rem 0;
     border-radius: 0;
     box-shadow: none;
   }
@@ -390,6 +390,14 @@ a {
     width: 2.2rem;
     top: 0.1rem;
     right: 0.3rem;
+  }
+  .menu {
+    position: absolute;
+    margin: 0;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
   }
 }
 
