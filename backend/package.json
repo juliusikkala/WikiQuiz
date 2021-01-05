@@ -8,7 +8,7 @@
     "start": "PORT=3001 nodemon ./bin/www"
   },
   "dependencies": {
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "cors": "^2.8.5",
     "express": "^4.17.0",
     "lodash": "^4.17.11",
